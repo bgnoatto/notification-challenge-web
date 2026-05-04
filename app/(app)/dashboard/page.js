@@ -15,9 +15,18 @@ export default async function DashboardPage() {
     const all = await res.json();
     notifications = all
       .sort((a, b) => {
-        if (a.updatedAt && b.updatedAt) return new Date(b.updatedAt) - new Date(a.updatedAt);
-        if (a.updatedAt) return -1;
-        if (b.updatedAt) return 1;
+        if (a.createdAt && b.createdAt) {
+          const diff = new Date(b.createdAt) - new Date(a.createdAt);
+          if (diff !== 0) return diff;
+        } else if (a.createdAt) return -1;
+        else if (b.createdAt) return 1;
+
+        if (a.updatedAt && b.updatedAt) {
+          const diff = new Date(b.updatedAt) - new Date(a.updatedAt);
+          if (diff !== 0) return diff;
+        } else if (a.updatedAt) return -1;
+        else if (b.updatedAt) return 1;
+
         return b.id - a.id;
       })
       .slice(0, 5);

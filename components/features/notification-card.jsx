@@ -11,15 +11,23 @@ function formatDate(iso) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
+    timeZone: "America/Argentina/Buenos_Aires",
   }).format(new Date(iso));
 }
 
+const STATUS_STYLES = {
+  SENDING: "bg-amber-900/40 text-amber-300 border-amber-700",
+  SENT: "bg-green-900/40 text-green-300 border-green-700",
+  FAILED: "bg-red-900/40 text-red-300 border-red-700",
+};
+
 export function NotificationCard({ notification }) {
-  const { id, title, content, channelLabel, createdAt, updatedAt } = notification;
+  const { id, title, content, channelLabel, createdAt, updatedAt, statusLabel } = notification;
 
   const wasUpdated = updatedAt && createdAt && updatedAt !== createdAt;
-  const dateLabel = wasUpdated ? "Updated" : "Created";
-  const dateValue = formatDate(updatedAt ?? createdAt);
+  const createdValue = formatDate(createdAt);
+  const updatedValue = wasUpdated ? formatDate(updatedAt) : null;
 
   return (
     <Card>
@@ -27,13 +35,24 @@ export function NotificationCard({ notification }) {
         <div className="flex flex-col gap-2 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge channelLabel={channelLabel} />
+            {statusLabel && (
+              <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[statusLabel] ?? "bg-muted text-muted-foreground border-border"}`}>
+                {statusLabel}
+              </span>
+            )}
+            <span className="text-xs text-muted-foreground/60 font-mono">#{id}</span>
             <h3 className="text-sm font-semibold text-foreground truncate">{title}</h3>
           </div>
           <p className="text-sm text-muted-foreground line-clamp-2">{content}</p>
-          {dateValue && (
-            <p className="text-xs text-muted-foreground/70">
-              {dateLabel}: {dateValue}
-            </p>
+          {(createdValue || updatedValue) && (
+            <div className="flex flex-col gap-0.5">
+              {createdValue && (
+                <p className="text-xs text-muted-foreground/70">Created: {createdValue}</p>
+              )}
+              {updatedValue && (
+                <p className="text-xs text-muted-foreground/70">Updated: {updatedValue}</p>
+              )}
+            </div>
           )}
         </div>
         <Link

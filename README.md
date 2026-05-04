@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# notification-challenge-web
 
-## Getting Started
+A user portal for managing and sending notifications, built on top of the [notification-challenge](https://github.com/bgnoatto/notification-challenge) REST API.
 
-First, run the development server:
+## Features
+
+- Register and log in with JWT-based authentication
+- Dashboard showing your last 5 notifications, sorted by creation date
+- Each notification displays its channel (EMAIL, SMS, PUSH), delivery status (SENDING, SENT, FAILED), and timestamps
+- Create new notifications and dispatch them through the selected channel
+- Edit an existing notification and re-dispatch it — triggers a new send without creating a new record
+
+## Pre-Requisites
+
+- Node.js 20+
+- The [notification-challenge](https://github.com/bgnoatto/notification-challenge) backend running and reachable
+- A `.env.local` file at the project root (see Env vars below)
+
+## How to run in development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app will be available at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## How to build for production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Env vars
 
-To learn more about Next.js, take a look at the following resources:
+| Variable     | Description                                                                | Default                             |
+|--------------|----------------------------------------------------------------------------|-------------------------------------|
+| `API_URL`    | Base URL of the notification-challenge backend                             | `http://localhost:8080`             |
+| `JWT_SECRET` | Base64-encoded secret used to verify JWT tokens (must match the backend's) | insecure default — override in prod |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Create a `.env.local` file at the project root:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+API_URL=http://localhost:8080
+JWT_SECRET=<your-base64-encoded-secret>
+```
 
-## Deploy on Vercel
+## Techs
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Next.js 16 (App Router)
+- React 19
+- Tailwind CSS v4
+- jose (JWT verification in Edge Runtime)
+- lucide-react (icons)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Decisions made
+
+- **App Router + Server Components**: Data fetching happens server-side — no API calls from the browser, no CORS configuration needed. The frontend acts as a BFF layer over the Spring Boot API.
+- **Server Actions**: Form submissions (login, register, create, edit) use Server Actions directly. No client-side fetch, no extra API routes.
+- **httpOnly cookies**: The JWT is stored in an httpOnly, SameSite=Strict cookie — inaccessible to JavaScript, XSS-safe.
+- **jose**: JWT verification runs in Next.js proxy (Edge Runtime), which does not support Node.js built-ins. `jose` is the only standards-compliant JWT library that works in the Edge.
+- **Tailwind CSS v4**: Tokens are defined in `globals.css` via `@theme` — no `tailwind.config.js` needed.
+
+## Route
+
+- Local: [http://localhost:3000](http://localhost:3000)
+
+## Areas to improve
+
+- Add refresh token support — current JWT sessions expire after 8 hours with no silent renewal.
+- Paginate the notifications list — currently capped at the last 5 on the client side after fetching all records.
+- Add toast notifications for action feedback instead of relying solely on URL-based error params.
