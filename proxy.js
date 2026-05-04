@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import { jwtVerify } from "jose";
-
-const RAW = process.env.JWT_SECRET ?? "dGhpcy1pcy1hLXZlcnktc2VjcmV0LWtleS10aGF0LWlzLWF0LWxlYXN0LTMyLWJ5dGVz";
-const SECRET = Buffer.from(RAW, "base64");
+import { verifyToken } from "@/lib/auth";
 
 const PUBLIC_PATHS = ["/login", "/register", "/api/auth"];
 
@@ -20,7 +17,7 @@ export async function proxy(request) {
   }
 
   try {
-    await jwtVerify(token, SECRET);
+    await verifyToken(token);
     return NextResponse.next();
   } catch {
     const response = NextResponse.redirect(new URL("/login", request.url));

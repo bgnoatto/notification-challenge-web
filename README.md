@@ -12,9 +12,17 @@ A user portal for managing and sending notifications, built on top of the [notif
 
 ## Pre-Requisites
 
-- Node.js 20+
+- Docker installed
+- Docker Compose installed
 - The [notification-challenge](https://github.com/bgnoatto/notification-challenge) backend running and reachable
-- A `.env.local` file at the project root (see Env vars below)
+- Port 3000 free
+
+## How to run the APP
+
+```bash
+chmod +x ./run-app.sh
+./run-app.sh
+```
 
 ## How to run in development
 
@@ -25,25 +33,24 @@ npm run dev
 
 The app will be available at [http://localhost:3000](http://localhost:3000).
 
-## How to build for production
-
-```bash
-npm run build
-npm start
-```
-
 ## Env vars
 
-| Variable     | Description                                                                | Default                             |
-|--------------|----------------------------------------------------------------------------|-------------------------------------|
-| `API_URL`    | Base URL of the notification-challenge backend                             | `http://localhost:8080`             |
-| `JWT_SECRET` | Base64-encoded secret used to verify JWT tokens (must match the backend's) | insecure default — override in prod |
+| Variable     | Description                                                                | Default                              |
+|--------------|----------------------------------------------------------------------------|--------------------------------------|
+| `API_URL`    | Base URL of the notification-challenge backend                             | `http://host.docker.internal:8080`   |
+| `JWT_SECRET` | Base64-encoded secret used to verify JWT tokens (must match the backend's) | insecure default — override in prod  |
 
-Create a `.env.local` file at the project root:
+For local development, create a `.env.local` file at the project root:
 
 ```env
 API_URL=http://localhost:8080
 JWT_SECRET=<your-base64-encoded-secret>
+```
+
+To override env vars at runtime with Docker:
+
+```bash
+API_URL=https://your-backend.com JWT_SECRET=your-secret ./run-app.sh
 ```
 
 ## Techs
@@ -53,6 +60,7 @@ JWT_SECRET=<your-base64-encoded-secret>
 - Tailwind CSS v4
 - jose (JWT verification in Edge Runtime)
 - lucide-react (icons)
+- Docker + Docker Compose
 
 ## Decisions made
 
@@ -61,6 +69,8 @@ JWT_SECRET=<your-base64-encoded-secret>
 - **httpOnly cookies**: The JWT is stored in an httpOnly, SameSite=Strict cookie — inaccessible to JavaScript, XSS-safe.
 - **jose**: JWT verification runs in Next.js proxy (Edge Runtime), which does not support Node.js built-ins. `jose` is the only standards-compliant JWT library that works in the Edge.
 - **Tailwind CSS v4**: Tokens are defined in `globals.css` via `@theme` — no `tailwind.config.js` needed.
+- **Docker standalone output**: `output: "standalone"` in `next.config.mjs` generates a minimal production image without the full `node_modules`. Significantly reduces image size.
+- **host.docker.internal**: The Docker container reaches the external backend via `host.docker.internal`, resolved to the host gateway via `extra_hosts` in `docker-compose.yml` — required on Linux.
 
 ## Route
 

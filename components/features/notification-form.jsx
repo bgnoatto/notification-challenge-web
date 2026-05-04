@@ -67,7 +67,7 @@ export function NotificationForm({ action, defaultValues = {}, submitLabel = "Sa
       {state?.error && (
         <p role="alert" className="text-sm text-destructive">{state.error}</p>
       )}
-      <Button type="submit" loading={isPending}>{submitLabel}</Button>
+      <Button type="submit" disabled={isPending}>{submitLabel}</Button>
       {isPending && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
           <svg className="h-10 w-10 animate-spin text-accent" viewBox="0 0 24 24" fill="none" aria-label="Loading">
