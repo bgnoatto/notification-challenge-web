@@ -1,0 +1,10 @@
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      API_URL: ${API_URL:-http://host.docker.internal:8080}
+      JWT_SECRET: ${JWT_SECRET:-dGhpcy1pcy1hLXZlcnktc2VjcmV0LWtleS10aGF0LWlzLWF0LWxlYXN0LTMyLWJ5dGVz}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
